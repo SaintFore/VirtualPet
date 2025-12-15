@@ -1,21 +1,55 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
 	"time"
 )
 
+type LivingBeing interface {
+	Feed()
+	Play()
+	PrintStatus()
+	Save() error
+}
+
 type Pet struct {
-	Name   string
-	Hungry int
-	Energy int
-	Alive  bool
+	Name   string `json:"name"`
+	Hungry int    `json:"hungry"`
+	Energy int    `json:"energy"`
+	Alive  bool   `json:"alive"`
 	mu     sync.Mutex
 }
 
+func (pet *Pet) Save() error {
+	pet.mu.Lock()
+	defer pet.mu.Unlock()
+
+	data, err := json.MarshalIndent(pet, "", "  ") // indent两个字符，符合json格式化
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile("pet_data.json", data, 0644)
+}
+
+func Load() (*Pet, error) {
+	data, err := os.ReadFile("pet_data.json")
+	if err != nil {
+		return nil, err
+	}
+	var pet Pet
+	if err = json.Unmarshal(data, &pet); err != nil {
+		return nil, err
+	}
+	return &pet, nil
+}
+
 func (pet *Pet) PrintStatus() {
+	pet.mu.Lock()
+	defer pet.mu.Unlock()
 	fmt.Println("==========")
 	fmt.Printf("%s的饥饿度为%d,能量为%d\n", pet.Name, pet.Hungry, pet.Energy)
 	fmt.Println("==========")
@@ -28,8 +62,6 @@ func (pet *Pet) Feed() {
 		pet.Hungry = 0
 	}
 	fmt.Printf("%v正在进食\n", pet.Name)
-	fmt.Println("当前状态")
-	pet.PrintStatus()
 }
 
 func (pet *Pet) Play() {
@@ -53,7 +85,10 @@ func (pet *Pet) Die() {
 }
 
 func main() {
-	myPet := Pet{Name: "brian", Hungry: 90, Energy: 10, Alive: true}
+	myPet, err := Load()
+	if err != nil {
+		myPet = &Pet{Name: "brian", Hungry: 0, Energy: 100, Alive: true}
+	}
 	go func() {
 		for {
 			time.Sleep(time.Second * 5)
@@ -69,11 +104,13 @@ func main() {
 
 	go func() {
 		for {
+			time.Sleep(time.Second * 1)
+			myPet.mu.Lock()
 			if !myPet.Alive {
-				time.Sleep(time.Second * 1)
 				fmt.Println("\n宠物已经死了")
 				os.Exit(0)
 			}
+			myPet.mu.Unlock()
 		}
 	}()
 
@@ -89,11 +126,15 @@ func main() {
 		case "status":
 			myPet.PrintStatus()
 		case "exit", "quit":
+			if err := myPet.Save(); err != nil {
+				fmt.Println("存储失败 ", err)
+			} else {
+				fmt.Println("存储成功")
+			}
 			fmt.Println("再见")
 			return
 		default:
 			fmt.Println("输入参数错误")
 		}
-
 	}
 }
