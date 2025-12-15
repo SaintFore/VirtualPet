@@ -13,6 +13,7 @@ type LivingBeing interface {
 	Play()
 	PrintStatus()
 	Save() error
+	Life()
 }
 
 type Pet struct {
@@ -21,6 +22,15 @@ type Pet struct {
 	Energy int    `json:"energy"`
 	Alive  bool   `json:"alive"`
 	mu     sync.Mutex
+}
+
+func NewPet(name string) *Pet {
+	return &Pet{
+		Name:   name,
+		Hungry: 0,
+		Energy: 100,
+		Alive:  true,
+	}
 }
 
 func (pet *Pet) Save() error {

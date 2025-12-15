@@ -9,7 +9,7 @@ import (
 func main() {
 	myPet, err := creature.Load()
 	if err != nil {
-		myPet = &creature.Pet{Name: "brian", Hungry: 0, Energy: 100, Alive: true}
+		myPet = creature.NewPet("brian")
 	}
 	myPet.Life()
 
