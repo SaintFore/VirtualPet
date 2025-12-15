@@ -8,6 +8,16 @@ import (
 	"time"
 )
 
+const (
+	MaxHunger  = 100
+	MaxEnergy  = 100
+	HungerInc  = 5  // 每次自动增加的饥饿
+	EnergyInc  = 5  // 每次自动恢复的精力
+	FeedVal    = 20 // 喂食减少的饥饿
+	PlayCost   = 10 // 玩耍消耗的精力
+	PlayHunger = 10 // 玩耍增加的饥饿
+)
+
 type LivingBeing interface {
 	Feed()
 	Play()
@@ -28,7 +38,7 @@ func NewPet(name string) *Pet {
 	return &Pet{
 		Name:   name,
 		Hungry: 0,
-		Energy: 100,
+		Energy: MaxEnergy,
 		Alive:  true,
 	}
 }
@@ -68,7 +78,7 @@ func (pet *Pet) PrintStatus() {
 func (pet *Pet) Feed() {
 	pet.mu.Lock()
 	defer pet.mu.Unlock()
-	if pet.Hungry -= 20; pet.Hungry < 0 {
+	if pet.Hungry -= FeedVal; pet.Hungry < 0 {
 		pet.Hungry = 0
 	}
 	fmt.Printf("%v正在进食\n", pet.Name)
@@ -77,13 +87,13 @@ func (pet *Pet) Feed() {
 func (pet *Pet) Play() {
 	pet.mu.Lock()
 	defer pet.mu.Unlock()
-	if pet.Energy < 10 {
+	if pet.Energy < PlayCost {
 		fmt.Println("太累了")
-	} else if pet.Hungry+10 > 100 {
+	} else if pet.Hungry+PlayHunger > MaxHunger {
 		fmt.Println("太饿了")
 	} else {
-		pet.Energy -= 10
-		pet.Hungry += 10
+		pet.Energy -= PlayCost
+		pet.Hungry += PlayHunger
 		fmt.Printf("%v玩得很开心\n", pet.Name)
 	}
 }
@@ -93,9 +103,9 @@ func (pet *Pet) Life() {
 		for {
 			time.Sleep(time.Second * 5)
 			pet.mu.Lock()
-			pet.Hungry += 5
-			pet.Energy += 5
-			if pet.Hungry >= 100 {
+			pet.Hungry += HungerInc
+			pet.Energy += EnergyInc
+			if pet.Hungry >= MaxHunger {
 				pet.Alive = false
 			}
 			if !pet.Alive {
