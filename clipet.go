@@ -38,9 +38,10 @@ func main() {
 
 	fmt.Println("Server is running on http://localhost:18080")
 	http.HandleFunc("/status", statusHandler)
-	http.HandleFunc("/feed", feedHandler)
-	http.HandleFunc("/play", playHandler)
-
+	http.HandleFunc("/feed", onlyPost(feedHandler))
+	http.HandleFunc("/play", onlyPost(playHandler))
+	http.HandleFunc("/stop", onlyPost(stopHandler))
+	http.HandleFunc("/start", onlyPost(startHandler))
 	go func() {
 		fs := http.FileServer(http.Dir("./static/"))
 		http.Handle("/", fs)
@@ -85,21 +86,31 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func feedHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	myPet.Feed()
-
 	fmt.Fprintf(w, "Feed success")
 }
 
 func playHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	myPet.Play()
-
 	fmt.Fprintf(w, "Play success")
+}
+
+func stopHandler(w http.ResponseWriter, r *http.Request) {
+	myPet.StopLife()
+	fmt.Fprintf(w, "Stop success")
+}
+
+func startHandler(w http.ResponseWriter, r *http.Request) {
+	myPet.StartLife()
+	fmt.Fprintf(w, "Start success")
+}
+
+func onlyPost(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		next(w, r)
+	}
 }

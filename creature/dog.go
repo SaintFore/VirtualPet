@@ -12,8 +12,8 @@ import (
 const (
 	MaxHunger  = 100
 	MaxEnergy  = 100
-	HungerInc  = 5  // 每次自动增加的饥饿
-	EnergyInc  = 5  // 每次自动恢复的精力
+	HungerInc  = 1  // 每次自动增加的饥饿
+	EnergyInc  = 1  // 每次自动恢复的精力
 	FeedVal    = 20 // 喂食减少的饥饿
 	PlayCost   = 10 // 玩耍消耗的精力
 	PlayHunger = 10 // 玩耍增加的饥饿
@@ -77,6 +77,7 @@ func Load() (*Pet, error) {
 		return nil, err
 	}
 	pet.DeathChan = make(chan struct{})
+	pet.QuitChan = make(chan struct{})
 	return &pet, nil
 }
 
@@ -112,24 +113,41 @@ func (pet *Pet) Play() {
 }
 
 func (pet *Pet) Life() {
-	ticker := time.NewTicker(time.Second * 5)
+	pet.mu.Lock()
+	pet.QuitChan = make(chan struct{})
+	pet.mu.Unlock()
+	ticker := time.NewTicker(time.Second)
 	go func() {
 		defer ticker.Stop()
-		for range ticker.C {
-			pet.mu.Lock()
-			if pet.Energy += EnergyInc; pet.Energy > MaxEnergy {
-				pet.Energy = MaxEnergy
-			}
-			if pet.Hungry += HungerInc; pet.Hungry >= MaxHunger {
-				pet.Alive = false
-				close(pet.DeathChan)
-			}
-			if !pet.Alive {
-				fmt.Println("\n宠物已经死了")
+		for {
+			select {
+			case <-ticker.C:
+				pet.mu.Lock()
+				if pet.Energy += EnergyInc; pet.Energy > MaxEnergy {
+					pet.Energy = MaxEnergy
+				}
+				if pet.Hungry += HungerInc; pet.Hungry >= MaxHunger {
+					pet.Alive = false
+					close(pet.DeathChan)
+				}
+				if !pet.Alive {
+					fmt.Println("\n宠物已经死了")
+					pet.mu.Unlock()
+					return
+				}
 				pet.mu.Unlock()
+			case <-pet.QuitChan:
+				fmt.Println("时间暂停了")
 				return
 			}
-			pet.mu.Unlock()
 		}
 	}()
+}
+
+func (pet *Pet) StopLife() {
+	close(pet.QuitChan)
+}
+
+func (pet *Pet) StartLife() {
+	pet.Life()
 }
