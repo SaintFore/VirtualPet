@@ -34,6 +34,7 @@ type Pet struct {
 	Energy    int           `json:"energy"`
 	Alive     bool          `json:"alive"`
 	DeathChan chan struct{} `json:"-"`
+	QuitChan  chan struct{} `json:"-"`
 	mu        sync.Mutex    `json:"-"`
 }
 
@@ -50,6 +51,7 @@ func NewPet(name string) *Pet {
 		Energy:    MaxEnergy,
 		Alive:     true,
 		DeathChan: make(chan struct{}),
+		QuitChan:  make(chan struct{}),
 	}
 }
 
@@ -110,9 +112,10 @@ func (pet *Pet) Play() {
 }
 
 func (pet *Pet) Life() {
+	ticker := time.NewTicker(time.Second * 5)
 	go func() {
-		for {
-			time.Sleep(time.Second * 5)
+		defer ticker.Stop()
+		for range ticker.C {
 			pet.mu.Lock()
 			if pet.Energy += EnergyInc; pet.Energy > MaxEnergy {
 				pet.Energy = MaxEnergy
