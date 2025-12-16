@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -18,10 +19,13 @@ import (
 var myPet *creature.Pet
 
 func main() {
+	portPtr := flag.Int("port", 18080, "服务器端口")
+	namePtr := flag.String("name", "brian", "宠物名称")
+	flag.Parse()
 	var err error
 	myPet, err = creature.Load()
 	if err != nil {
-		myPet = creature.NewPet("brian")
+		myPet = creature.NewPet(*namePtr)
 	}
 	myPet.Life()
 
@@ -45,7 +49,8 @@ func main() {
 	go func() {
 		fs := http.FileServer(http.Dir("./static/"))
 		http.Handle("/", fs)
-		httpErr := http.ListenAndServe(":18080", nil)
+		addr := fmt.Sprintf(":%d", *portPtr)
+		httpErr := http.ListenAndServe(addr, nil)
 		if httpErr != nil {
 			fmt.Println("Server failed:", httpErr)
 		}
