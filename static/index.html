@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Go CyberPet</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        margin-top: 50px;
+      }
+      .stat-box {
+        font-size: 20px;
+        margin: 20px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      #message {
+        color: red;
+        height: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>我的赛博宠物</h1>
+    <h2 id="name">Loading...</h2>
+    <div class="stat-box">
+      饥饿度: <span id="hungry">0</span> / 100 <br />
+      精力值: <span id="energy">0</span> / 100
+    </div>
+    <div id="controls">
+      <button onclick="action('feed')">喂食 (Feed)</button>
+      <button onclick="action('play')">玩耍 (Play)</button>
+    </div>
+    <p id="message"></p>
+
+    <script>
+      function updateStatus() {
+        fetch("/status")
+          .then((r) => r.json())
+          .then((data) => {
+            document.getElementById("name").innerText = data.name;
+            document.getElementById("hungry").innerText = data.hungry;
+            document.getElementById("energy").innerText = data.energy;
+            if (!data.alive) {
+              document.getElementById("message").innerText = "宠物已死亡";
+              document.getElementById("controls").style.display = "none";
+            }
+          });
+      }
+
+      function action(type) {
+        fetch("/" + type, { method: "POST" }).then(async (r) => {
+          const text = await r.text();
+          document.getElementById("message").innerText = text;
+          updateStatus();
+        });
+      }
+
+      setInterval(updateStatus, 1000); // 每秒刷新状态
+      updateStatus();
+    </script>
+  </body>
+</html>

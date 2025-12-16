@@ -42,9 +42,11 @@ func main() {
 	http.HandleFunc("/play", playHandler)
 
 	go func() {
-		http_err := http.ListenAndServe(":18080", nil)
-		if http_err != nil {
-			fmt.Println("Server failed:", http_err)
+		fs := http.FileServer(http.Dir("./static/"))
+		http.Handle("/", fs)
+		httpErr := http.ListenAndServe(":18080", nil)
+		if httpErr != nil {
+			fmt.Println("Server failed:", httpErr)
 		}
 	}()
 
