@@ -4,9 +4,9 @@ import "testing"
 
 func TestFeed(t *testing.T) {
 	p := Pet{Name: "griffin", Hungry: 50}
-	expeted := p.Hungry - FeedVal
+	expected := p.Hungry - FeedVal
 	p.Feed()
-	if p.Hungry != expeted {
+	if p.Hungry != expected {
 		t.Errorf("期望饥饿为30，实际饥饿值为%d", p.Hungry)
 	}
 

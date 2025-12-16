@@ -1,3 +1,4 @@
+// Package creature 提供虚拟宠物核心逻辑
 package creature
 
 import (
@@ -24,22 +25,31 @@ type LivingBeing interface {
 	PrintStatus()
 	Save() error
 	Life()
+	GetState() ([]byte, error)
 }
 
 type Pet struct {
-	Name   string `json:"name"`
-	Hungry int    `json:"hungry"`
-	Energy int    `json:"energy"`
-	Alive  bool   `json:"alive"`
-	mu     sync.Mutex
+	Name      string        `json:"name"`
+	Hungry    int           `json:"hungry"`
+	Energy    int           `json:"energy"`
+	Alive     bool          `json:"alive"`
+	DeathChan chan struct{} `json:"-"`
+	mu        sync.Mutex    `json:"-"`
+}
+
+func (pet *Pet) GetState() ([]byte, error) {
+	pet.mu.Lock()
+	defer pet.mu.Unlock()
+	return json.Marshal(pet)
 }
 
 func NewPet(name string) *Pet {
 	return &Pet{
-		Name:   name,
-		Hungry: 0,
-		Energy: MaxEnergy,
-		Alive:  true,
+		Name:      name,
+		Hungry:    0,
+		Energy:    MaxEnergy,
+		Alive:     true,
+		DeathChan: make(chan struct{}),
 	}
 }
 
@@ -64,6 +74,7 @@ func Load() (*Pet, error) {
 	if err = json.Unmarshal(data, &pet); err != nil {
 		return nil, err
 	}
+	pet.DeathChan = make(chan struct{})
 	return &pet, nil
 }
 
@@ -103,14 +114,17 @@ func (pet *Pet) Life() {
 		for {
 			time.Sleep(time.Second * 5)
 			pet.mu.Lock()
-			pet.Hungry += HungerInc
-			pet.Energy += EnergyInc
-			if pet.Hungry >= MaxHunger {
+			if pet.Energy += EnergyInc; pet.Energy > MaxEnergy {
+				pet.Energy = MaxEnergy
+			}
+			if pet.Hungry += HungerInc; pet.Hungry >= MaxHunger {
 				pet.Alive = false
+				close(pet.DeathChan)
 			}
 			if !pet.Alive {
 				fmt.Println("\n宠物已经死了")
-				os.Exit(0)
+				pet.mu.Unlock()
+				return
 			}
 			pet.mu.Unlock()
 		}

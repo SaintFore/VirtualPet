@@ -2,16 +2,51 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"os"
 
 	"cyberpet/creature"
 )
 
+// var myPet creature.LivingBeing
+// var (
+//
+//	myPet creature.Pet
+//	err   error
+//
+// )
+var myPet *creature.Pet
+
 func main() {
-	myPet, err := creature.Load()
+	var err error
+	myPet, err = creature.Load()
 	if err != nil {
 		myPet = creature.NewPet("brian")
 	}
 	myPet.Life()
+
+	go func() {
+		<-myPet.DeathChan
+		if err := myPet.Save(); err != nil {
+			fmt.Println("存储失败", err)
+			os.Exit(1)
+		} else {
+			fmt.Println("存储成功")
+			os.Exit(0)
+		}
+	}()
+
+	fmt.Println("Server is running on http://localhost:18080")
+	http.HandleFunc("/status", statusHandler)
+	http.HandleFunc("/feed", feedHandler)
+	http.HandleFunc("/play", playHandler)
+
+	go func() {
+		http_err := http.ListenAndServe(":18080", nil)
+		if http_err != nil {
+			fmt.Println("Server failed:", http_err)
+		}
+	}()
 
 	for {
 		var cmd string
@@ -36,4 +71,33 @@ func main() {
 			fmt.Println("输入参数错误")
 		}
 	}
+}
+
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := myPet.GetState()
+	if err != nil {
+		fmt.Println("获取数据失败")
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
+
+func feedHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	myPet.Feed()
+
+	fmt.Fprintf(w, "Feed success")
+}
+
+func playHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	myPet.Play()
+
+	fmt.Fprintf(w, "Play success")
 }
