@@ -1,45 +1,78 @@
-# 🐾 VirtualPet
+# 🐾 VIRTUAL PET
 
-VirtualPet 是一个使用 Go 语言编写的虚拟宠物应用。它同时提供了一个命令行界面和一个 Web 界面，让你可以随时随地与你的虚拟宠物互动。
+```text
+ _     _  _  ______  _______ _     _ _______        
+  \   /  / |/      \/_  __  / /     / /   _   |  /     
+   \ /  /  /  ____/  / /  / / /     / /   /|  | /      
+    |  /  /  /      / /  / / /     / /   / |  |/       
+    | /  /  /      / /  / / /     / /   /  |  |        
+    |/  /  \______/ /__/  /_/_____/ /___/   |_|        
+  ______  _______ _______                              
+ /      \/_  __  /_______                              
+/  ____/  / /  / /                                     
+\______/ /__/  /_/                                      
+                                                       
+```
 
-## ✨ 主要功能
+<div align="center">
 
-- **命令行界面**: 通过命令行与你的宠物互动，包括喂食、玩耍、查看状态等。
-- **Web 界面**: 通过 Web 浏览器与你的宠物互动，实时查看宠物的状态。
-- **状态持久化**: 你的宠物状态会自动保存，下次打开时可以继续上次的进度。
-- **生命周期**: 你的宠物有自己的生命周期，它会感到饥饿和疲惫，你需要好好照顾它。
+[![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
+[![Web](https://img.shields.io/badge/UI-Web%2FCLI-success?style=for-the-badge)](http://localhost:18080)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-## 🛠️ 如何使用
+**"Your digital companion, living in the shell and the browser."**
+你的数字伴侣，栖息在终端与浏览器之间。
 
-### 1. 运行应用
+[Getting Started](#getting-started) • [Interaction](#interaction) • [Features](#features) • [License](#license)
 
-你可以通过以下命令来运行 VirtualPet：
+</div>
 
+---
+
+## ⚡ What is VirtualPet?
+
+**VirtualPet** 是一个用 Go 编写的跨平台虚拟宠物模拟器。它为开发者提供了一个有趣的伴侣，支持在繁忙的终端编码间隙进行互动，同时也提供了一个直观的 Web 界面进行可视化养成。
+
+**不论是在 CLI 还是 Web，你的宠物始终在那里。**
+
+## 🚀 Features
+
+- **🐾 Digital Soul Engine**: 宠物拥有完整的生命体征（饥饿、疲惫、心情），随时间动态变化。
+- **💻 Dual Interaction**: 完美的命令行界面与现代 Web 浏览体验。
+- **💾 Persistent Life Cycle**: 自动保存宠物状态，你的每一次呵护都会被铭记。
+- **🎮 Interactive Bonding**: 支持喂食、玩耍与状态实时监测，体验养成乐趣。
+
+## 📦 Getting Started
+
+### 运行应用
 ```bash
+# 启动默认宠物
 go run clipet.go
+
+# 为你的宠物命名
+go run clipet.go --name=Kuro
 ```
 
-你也可以为你的宠物指定一个名字：
+### 访问界面
+- **CLI**: 直接在终端输入指令。
+- **Web**: 浏览器打开 `http://localhost:18080`。
 
-```bash
-go run clipet.go --name=YourPetName
-```
+## 🕹️ Interaction
 
-### 2. 使用命令行界面
+在终端中，你可以通过以下指令进行互动：
+- `feed`: 补充能量。
+- `play`: 提升心情。
+- `status`: 查看当前生命体征。
+- `exit`: 休息并保存状态。
 
-应用启动后，你可以在命令行中输入以下命令来与你的宠物互动：
+## 🛠️ Tech Stack
 
-- `feed`: 喂食你的宠物。
-- `play`: 与你的宠物玩耍。
-- `status`: 查看你的宠物的状态。
-- `exit`: 退出应用。
+- **Core**: Go (Golang)
+- **Frontend**: HTML5 / JavaScript
+- **Backend**: Go Standard Net/Http
 
-### 3. 使用 Web 界面
+---
 
-应用启动后，你可以在浏览器中访问 `http://localhost:18080` 来打开 Web 界面。
-
-在 Web 界面中，你可以看到你的宠物的实时状态，并可以通过点击按钮来与它互动。
-
-## 🤝 贡献
-
-欢迎任何形式的贡献！如果你有任何建议或问题，请随时提出 Issue。
+<div align="center">
+Created with ❤️ by <a href="https://github.com/SaintFore">SaintFore</a>
+</div>
